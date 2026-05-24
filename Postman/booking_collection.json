@@ -1,0 +1,494 @@
+{
+  "info": {
+    "_postman_id": "9315efda-e9be-450f-aa6b-20fda4fd4edb",
+    "name": "Booking API Testing Project",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54308785",
+    "_collection_link": "https://go.postman.co/collection/54308785-9315efda-e9be-450f-aa6b-20fda4fd4edb?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "1. Create Client",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();\r",
+                  "\r",
+                  "pm.environment.set(\"client_email\", `user_${timestamp}@test.com`);\r",
+                  "pm.environment.set(\"document_id\", timestamp.toString());\r",
+                  "pm.environment.set(\"client_password\", \"Sup3rP4ss2025\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "// 1. Status\r",
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "// 2. Tiene ID\r",
+                  "pm.test(\"Client has ID\", function () {\r",
+                  "    pm.expect(json.id).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "// 3. Email válido\r",
+                  "pm.test(\"Email format correct\", function () {\r",
+                  "    pm.expect(json.email).to.include(\"@\");\r",
+                  "});\r",
+                  "\r",
+                  "// 4. Nombre válido\r",
+                  "pm.test(\"Name is not empty\", function () {\r",
+                  "    pm.expect(json.name).to.not.be.empty;\r",
+                  "});\r",
+                  "\r",
+                  "// 5. created_at existe\r",
+                  "pm.test(\"created_at exists\", function () {\r",
+                  "    pm.expect(json.created_at).to.not.be.null;\r",
+                  "});\r",
+                  "\r",
+                  "// 6 tiempo de respuesta\r",
+                  "pm.test(\"Response time < 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "// 7 validar estructura\r",
+                  "pm.test(\"Response has required fields\", function () {\r",
+                  "    pm.expect(json).to.have.property(\"id\");\r",
+                  "    pm.expect(json).to.have.property(\"email\");\r",
+                  "    pm.expect(json).to.have.property(\"name\");\r",
+                  "});\r",
+                  "\r",
+                  "// 8 validar status de cliente activo\r",
+                  "pm.test(\"Client is active\", function () {\r",
+                  "    pm.expect(json.is_active).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "// Guardar variables\r",
+                  "pm.environment.set(\"client_email\", json.email);\r",
+                  "pm.environment.set(\"client_password\", \"Sup3rP4ss2025\");\r",
+                  "pm.environment.set(\"client_id\", json.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"{{$randomEmail}}\",\r\n  \"phone\": \"+51993042821\",\r\n  \"document_id\": \"{{$timestamp}}\",\r\n  \"address\": \"{{$randomStreetAddress}}\",\r\n  \"is_active\": true,\r\n  \"password\": \"Sup3rP4ss2025\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/clients",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Login Client",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "// 1\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// 2\r",
+                  "pm.test(\"Access token exists\", function () {\r",
+                  "    pm.expect(json.access_token).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "// 3\r",
+                  "pm.test(\"Access token is string\", function () {\r",
+                  "    pm.expect(json.access_token).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// 4\r",
+                  "pm.test(\"Refresh token exists\", function () {\r",
+                  "    pm.expect(json.refresh_token).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "// 5\r",
+                  "pm.test(\"Token length valid\", function () {\r",
+                  "    pm.expect(json.access_token.length).above(10);\r",
+                  "});\r",
+                  "\r",
+                  "// 6\r",
+                  "pm.test(\"Response has token fields\", function () {\r",
+                  "    pm.expect(json).to.have.property(\"access_token\");\r",
+                  "    pm.expect(json).to.have.property(\"refresh_token\");\r",
+                  "});\r",
+                  "\r",
+                  "// \r",
+                  "pm.test(\"Token format (JWT)\", function () {\r",
+                  "    pm.expect(json.access_token.split(\".\").length).to.eql(3);\r",
+                  "});\r",
+                  "\r",
+                  "// 7 \r",
+                  "pm.test(\"Response time < 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "// 8 \r",
+                  "pm.test(\"Token is not empty\", function () {\r",
+                  "    pm.expect(json.access_token).to.not.be.empty;\r",
+                  "});\r",
+                  "\r",
+                  "// Guardar token\r",
+                  "pm.environment.set(\"client_token\", json.access_token);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"{{client_email}}\",\r\n    \"password\": \"{{client_password}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/clients/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Verify Authenticated User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "// 1 Status correcto\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// 2 Usuario activo\r",
+                  "pm.test(\"User is active\", function () {\r",
+                  "    pm.expect(json.is_active).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "// 3 Email correcto\r",
+                  "pm.test(\"Email matches created client\", function () {\r",
+                  "    pm.expect(json.email).to.eql(pm.environment.get(\"client_email\"));\r",
+                  "});\r",
+                  "\r",
+                  "// 4 ID existe\r",
+                  "pm.test(\"Client ID exists\", function () {\r",
+                  "    pm.expect(json.id).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "// 5 Nombre válido\r",
+                  "pm.test(\"Name is string\", function () {\r",
+                  "    pm.expect(json.name).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// 6 Respuesta contiene campos esperados\r",
+                  "pm.test(\"Response structure valid\", function () {\r",
+                  "    pm.expect(json).to.have.property(\"id\");\r",
+                  "    pm.expect(json).to.have.property(\"email\");\r",
+                  "    pm.expect(json).to.have.property(\"name\");\r",
+                  "    pm.expect(json).to.have.property(\"is_active\");\r",
+                  "});\r",
+                  "\r",
+                  "// 7 tiempo de respuesta\r",
+                  "pm.test(\"Response time < 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "// 8 validar formato email\r",
+                  "pm.test(\"Email contains @\", function () {\r",
+                  "    pm.expect(json.email).to.include(\"@\");\r",
+                  "});\r",
+                  "\r",
+                  "// 9 validar type de ID\r",
+                  "pm.test(\"ID is number\", function () {\r",
+                  "    pm.expect(json.id).to.be.a(\"number\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{client_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clients/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get Clients",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "// 1 Status correcto\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// 2 Lista no vacía (requisito examen)\r",
+                  "pm.test(\"Client list is not empty\", function () {\r",
+                  "    pm.expect(json.items.length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "// 3 Existe paginación\r",
+                  "pm.test(\"Pagination fields exist\", function () {\r",
+                  "    pm.expect(json).to.have.property(\"total\");\r",
+                  "    pm.expect(json).to.have.property(\"page\");\r",
+                  "    pm.expect(json).to.have.property(\"page_size\");\r",
+                  "});\r",
+                  "\r",
+                  "// 4 Todos los clientes tienen email (requisito)\r",
+                  "pm.test(\"All clients have email\", function () {\r",
+                  "    json.items.forEach(client => {\r",
+                  "        pm.expect(client.email).to.include(\"@\");\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "// 5 Todos los clientes tienen ID\r",
+                  "pm.test(\"All clients have ID\", function () {\r",
+                  "    json.items.forEach(client => {\r",
+                  "        pm.expect(client.id).to.not.be.undefined;\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "// 6 Lista contiene el cliente creado\r",
+                  "pm.test(\"Created client exists in list\", function () {\r",
+                  "    const found = json.items.some(c => c.id == pm.environment.get(\"client_id\"));\r",
+                  "    pm.expect(found).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "// 7 Validar estructura de cada cliente\r",
+                  "pm.test(\"Clients have required fields\", function () {\r",
+                  "    json.items.forEach(client => {\r",
+                  "        pm.expect(client).to.have.property(\"name\");\r",
+                  "        pm.expect(client).to.have.property(\"email\");\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "// 8 tiempo de respuesta\r",
+                  "pm.test(\"Response time < 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "// 9 Valida cliente activo\r",
+                  "pm.test(\"At least one active client exists\", function () {\r",
+                  "    const active = json.items.some(c => c.is_active === true);\r",
+                  "    pm.expect(active).to.be.true;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clients?page=1&page_size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Update Client",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "// 1 Status correcto\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// 2 Nombre actualizado\r",
+                  "pm.test(\"Name updated correctly\", function () {\r",
+                  "    pm.expect(json.name).to.eql(\"Juan Updated\");\r",
+                  "});\r",
+                  "\r",
+                  "// 3 ID se mantiene igual\r",
+                  "pm.test(\"Client ID remains the same\", function () {\r",
+                  "    pm.expect(json.id).to.eql(parseInt(pm.environment.get(\"client_id\")));\r",
+                  "});\r",
+                  "\r",
+                  "// 4 Email sigue siendo válido\r",
+                  "pm.test(\"Email is still valid\", function () {\r",
+                  "    pm.expect(json.email).to.include(\"@\");\r",
+                  "});\r",
+                  "\r",
+                  "// 5 updated_at existe\r",
+                  "pm.test(\"updated_at field exists\", function () {\r",
+                  "    pm.expect(json.updated_at).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "// 6 Respuesta contiene estructura correcta\r",
+                  "pm.test(\"Response structure is valid\", function () {\r",
+                  "    pm.expect(json).to.have.property(\"id\");\r",
+                  "    pm.expect(json).to.have.property(\"name\");\r",
+                  "    pm.expect(json).to.have.property(\"email\");\r",
+                  "});\r",
+                  "\r",
+                  "// 7 Cliente sigue activo\r",
+                  "pm.test(\"Client is still active\", function () {\r",
+                  "    pm.expect(json.is_active).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "// 8 tiempo de respuesta\r",
+                  "pm.test(\"Response time < 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Juan Updated\",\r\n    \"password\": \"Sup3rP4ss2025\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/clients/{{client_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                "{{client_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6. Delete Client",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/clients/{{client_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "clients",
+                "{{client_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
